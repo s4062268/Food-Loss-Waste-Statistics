@@ -1,0 +1,228 @@
+CREATE TABLE country (
+    m49Code     TEXT NOT NULL,
+    countryName TEXT NOT NULL,
+    PRIMARY KEY (
+        m49Code
+    )
+);
+
+CREATE TABLE region (
+    m49Code TEXT NOT NULL,
+    regionName TEXT NOT NULL,
+    PRIMARY KEY (m49Code, regionName)
+    FOREIGN KEY (m49Code) REFERENCES country(m49Code)
+
+);
+
+
+CREATE TABLE foodType (
+    cpc          TEXT NOT NULL,
+    categoryName TEXT NOT NULL,
+    parentCpc    TEXT REFERENCES foodType (cpc),
+    PRIMARY KEY (
+        cpc
+    )
+);
+
+
+/*Below is without foreign key
+CREATE TABLE foodType (
+    cpc          TEXT NOT NULL,
+    categoryName TEXT NOT NULL,
+    PRIMARY KEY (
+        cpc
+    )
+);
+*/
+
+CREATE TABLE year (
+    year INTEGER NOT NULL,
+    PRIMARY KEY (
+        year
+    )
+);
+
+
+CREATE TABLE persona(
+    personaid INTEGER NOT NULL,
+    personaname TEXT NOT NULL,
+    PRIMARY KEY(personaid)
+);
+
+--CREATE TABLE describedPersona (
+--    characteristic TEXT NOT NULL,
+--    personaid INTEGER NOT NULL,
+--    PRIMARY KEY(characteristic,personaid),
+--    FOREIGN KEY (personaid) REFERENCES persona(personaid)
+--);
+
+CREATE TABLE activity (
+    activityName TEXT NOT NULL,
+    PRIMARY KEY (activityName)
+);
+
+CREATE TABLE foodSupplyStage (
+    foodSupplyStageName TEXT NOT NULL,
+    PRIMARY KEY (foodSupplyStageName)
+);
+
+
+CREATE TABLE lossCause (
+    lossCauseName TEXT NOT NULL,
+    PRIMARY KEY (lossCauseName)
+);
+
+CREATE TABLE teamMember(
+    studentNumber TEXT NOT NULL,
+    studentName TEXT NOT NULL,
+    PRIMARY KEY (studentNumber)
+);
+
+
+    
+    
+
+CREATE TABLE lossWithRegion(
+    lossId INTEGER NOT NULL,
+    m49code TEXT NOT NULL,
+    regionName TEXT NOT NULL,
+    cpc TEXT NOT NULL,
+    year INTEGER NOT NULL, 
+    lossValue REAL NOT NULL, 
+    activityName TEXT, 
+    foodSupplyStageName TEXT, 
+    lossCauseName TEXT,  
+    PRIMARY KEY(lossId),
+    FOREIGN KEY (activityName) REFERENCES activity(activityName),
+    FOREIGN KEY (lossCauseName) REFERENCES lossCause(lossCauseName),
+    FOREIGN KEY (year) REFERENCES year(year),
+    FOREIGN KEY (foodSupplyStageName) REFERENCES foodSupplyStage(foodSupplyStageName),
+    FOREIGN KEY (cpc) REFERENCES foodType(cpc),
+    FOREIGN KEY (m49code) REFERENCES country(m49code)
+    --FOREIGN KEY (regionName) REFERENCES region(regionName,m49code)
+
+);
+
+
+
+CREATE TABLE lossWithoutRegionOld(
+    lossId INTEGER NOT NULL,
+    m49code TEXT NOT NULL,
+    year INTEGER NOT NULL, 
+    lossValue REAL NOT NULL, 
+    activityName TEXT, 
+    foodSupplyStageName TEXT, 
+    lossCauseName TEXT,  
+    PRIMARY KEY(lossId),
+    FOREIGN KEY (activityName) REFERENCES activity(activityName),
+    FOREIGN KEY (lossCauseName) REFERENCES lossCause(lossCauseName),
+    FOREIGN KEY (year) REFERENCES year(year),
+    FOREIGN KEY (m49code) REFERENCES country(m49code),
+    FOREIGN KEY (foodSupplyStageName) REFERENCES foodSupplyStage(foodSupplyStageName)
+
+
+);
+    
+CREATE TABLE raw(
+    lossId INTEGER ,
+    m49code TEXT ,
+    country TEXT,
+    regionName TEXT ,
+    cpc TEXT ,
+    commodity TEXT,
+    year INTEGER , 
+    lossValue REAL , 
+    activityName TEXT, 
+    foodSupplyStageName TEXT, 
+    lossCauseName TEXT
+
+);
+
+DROP TABLE raw;
+SELECT * FROM raw;
+
+SELECT COUNT(DISTINCT cpc) FROM raw;
+SELECT COUNT(DISTINCT cpc) FROM foodType;
+
+DROP TABLE lossWithoutRegion;
+SELECT * FROM lossWithoutRegion;
+
+/* Compleeted evereything except cpc and this is for loss without region (Use food loss file in new attempt folder*/
+DROP TABLE foodType;
+
+
+/*Creating loss with region and cpc- I think loss without region is wrong as it has all records even without regions*/
+
+
+/*This is the correct table but the cpc was obtained from raw file*/
+CREATE TABLE lossWithoutRegion(
+    lossId INTEGER NOT NULL,
+    m49code TEXT NOT NULL,
+    cpc TEXT NOT NULL,
+    year INTEGER NOT NULL, 
+    lossValue REAL NOT NULL, 
+    activityName TEXT, 
+    foodSupplyStageName TEXT, 
+    lossCauseName TEXT,  
+    PRIMARY KEY(lossId),
+    FOREIGN KEY (activityName) REFERENCES activity(activityName),
+    FOREIGN KEY (lossCauseName) REFERENCES lossCause(lossCauseName),
+    FOREIGN KEY (year) REFERENCES year(year),
+    FOREIGN KEY (m49code) REFERENCES country(m49code),
+    FOREIGN KEY (cpc) REFERENCES foodType(cpc),
+    FOREIGN KEY (foodSupplyStageName) REFERENCES foodSupplyStage(foodSupplyStageName)
+
+
+);
+
+CREATE VIEW foodLossWithRegion(
+    lossId INTEGER NOT NULL,
+    m49code TEXT NOT NULL,
+    regionName TEXT NOT NULL,
+    cpc TEXT NOT NULL,
+    year INTEGER NOT NULL, 
+    lossValue REAL NOT NULL, 
+    activityName TEXT, 
+    foodSupplyStageName TEXT, 
+    lossCauseName TEXT,  
+    PRIMARY KEY(lossId),
+    FOREIGN KEY (m49code) REFERENCES country(m49code),
+    FOREIGN KEY (regionName) REFERENCES region(regionName, m49code),
+    FOREIGN KEY (cpc) REFERENCES foodType(cpc),
+    FOREIGN KEY (year) REFERENCES year(year),
+    FOREIGN KEY (activityName) REFERENCES activity(activityName),
+    FOREIGN KEY (foodSupplyStageName) REFERENCES foodSupplyStage(foodSupplyStageName),
+    FOREIGN KEY (lossCauseName) REFERENCES lossCause(lossCauseName)
+);
+
+ALTER TABLE foodType
+ADD COLUMN groupCpc REFERENCES foodType(cpc);
+
+CREATE VIEW foodLossWastebyFoodGroup (foodGroup, foodCommodity, activity, foodSupplyStage, lossCause, year, lossValue) AS
+SELECT g.categoryName AS foodGroup, f.categoryName AS foodCommodity, a.activityName AS activity, a.foodSupplyStageName AS foodSupplyStage, a.lossCauseName, a.year AS year, a.lossValue AS lossValue
+FROM lossWithoutRegion a
+JOIN foodType f ON f.cpc = a.cpc
+JOIN foodType g ON f.groupCpc = g.cpc
+WHERE g.categoryName = 'Cereals'
+
+UNION
+
+SELECT g.categoryName, f.categoryName, a.activityName, a.foodSupplyStageName, a.lossCauseName, a.year, a.lossValue
+FROM lossWithRegion a
+JOIN foodType f ON f.cpc = a.cpc
+JOIN foodType g ON f.groupCpc = g.cpc
+WHERE g.categoryName = 'Cereals';
+
+CREATE TABLE describedPersona (
+    characteristic     TEXT    NOT NULL,
+    personaid          INTEGER NOT NULL,
+    characteristicType TEXT,
+    PRIMARY KEY (
+        characteristic,
+        personaid
+    ),
+    FOREIGN KEY (
+        personaid
+    )
+    REFERENCES persona (personaid) 
+);

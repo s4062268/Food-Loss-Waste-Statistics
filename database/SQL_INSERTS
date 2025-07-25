@@ -1,0 +1,47 @@
+INSERT INTO persona VALUES (1, 'Romeo Matar');
+INSERT INTO persona VALUES (2, 'Rachel Robertson');
+INSERT INTO persona VALUES (3, 'Julia Baker');
+
+INSERT INTO describedPersona VALUES ('Name: Romeo Matar', 1);
+INSERT INTO describedPersona VALUES ('Attributes / Background: 53 Years Old, Lebanese Australian, Male, married with 2 children, High-School graduate from Emerald High School, Working professionally as a woodworker.', 1);
+INSERT INTO describedPersona VALUES ('Needs & Goals: Romeo wants to be able to use a website without being confused when navigating, whilst also being able to obtain very shallow information about the social challenge without effort being needed, mostly looking for ‘wow numbers’ that entice them with shock value, whether positive or negative. Additionally, Romeo wants to learn about what data is being collected, and for what reason it’s being collected for', 1);
+INSERT INTO describedPersona VALUES ('Skills & Experience: Romeo has very little knowledge and experience with technology, often confused when using it day to day even with programs the user is more familiar with (social medias like Facebook or messenger). Romeo works in the profession of Woodworking and has been doing so for most of their life, running an in-person store and recording all information physically, Romeo has no current need for technology outside of personal reasons. Further, whilst Romeo has a decent understanding of tables and graphs, they often struggle with making that relation from a physical to online concept, and similarly struggle when it comes to sorting through tables and the likes.', 1);
+INSERT INTO describedPersona VALUES ('Pains: Romeo often struggles on most sites as they are far too convoluted to be easily digested and navigated for them, making information far too difficult to obtain. Romeo often finds himself annoyed at the ability to collate information at their own accord, as they do not care for doing so, and wishes that even if the site had that ability, he could still find glimpses of information without doing so.', 1);
+
+INSERT INTO describedPersona VALUES ('Name: Rachel Robertson', 2);
+INSERT INTO describedPersona VALUES ('Attributes/Background: Australian, 18 years old, Female, Single, University, High-achieving student, speaks fluent English and a little French, is hoping to get some job experience as well, Freshman studying Studies Food Technology', 2);
+INSERT INTO describedPersona VALUES ('Needs and Goal: Needs to complete a five paged report where she identifies three distinct food products and checks the wastage levels of those food types of a certain country and how they have varied in a 5-year timeframe (anytime above 2010.The assignment is due in a week, and she must conduct research as soon as possible.She needs concise information that she can directly understand. She must identify trends in the data with years.', 2);
+INSERT INTO describedPersona VALUES ('Skill & experience levels: Uses electronic devices including the computer often and is comfortable with technology. Has done a couple of research projects in the past in school and university.n', 2);
+INSERT INTO describedPersona VALUES ('Pains: Managing multiple assignments. She spends too much time to complete one assignment. A lot of time is taken for data collection and the comprehension of that. Having to calculate the change in loss values of the 5-year period.', 2);
+
+
+INSERT INTO describedPersona VALUES ('Name: Julia Baker', 3);
+INSERT INTO describedPersona VALUES ('Attributes / Background: 44, Female, Australian, Has an Adopted child with their wife, Bachelor of Environmental Science & Bachelor of Politics, and International Studies at Melbourne University.', 3);
+INSERT INTO describedPersona VALUES ('Needs & Goals: Julia needs to create a policy on behalf of the up and coming direct to consumer delivery service. To do so, they are looking to gather thorough information about specific foods, and which foods are most affected by which stages of the food supply chain. This will allow them to build policies surrounding how each food should be delivered, stored, and obtained. As Julia is the head researcher for statistics regarding the issue of food loss and waste, they must also gather various statistics about food loss and waste internationally, common trends and how that can be similarly displayed through specific foods in relation to the supply chain process, ultimately structuring a justification for why this new delivery system will benefit the social issue.', 3);
+INSERT INTO describedPersona VALUES ('Skills & Experience: As Julia has completed a lot of research work in the past, they are very knowledgeable with sites like this, and have a, whilst not thorough, good understanding of technology. Julia is very familiar with both graph displays, and table displays of varying information, so is very much used to conventions regarding these tasks.', 3);
+INSERT INTO describedPersona VALUES ('Pains: Currently, Julia does not enjoy having to use multiple different sites to find information all regarding a similar social challenge, and often finds that information about these topics isn’t specific enough, and often fills very specific use cases. The lack of information makes it difficult for Julia to make a thorough policy statement and justification. The variety of pages similarly makes it difficult to complete work as Julia does not enjoy having to tab in and between many places at the same time.', 3);
+
+
+INSERT INTO teamMember VALUES ('s4062268', 'Menuki Vinhara Wijetunge');
+INSERT INTO teamMember VALUES ('s4090946', 'Harrison Zane Lewis-McCoy');
+
+INSERT INTO region 
+SELECT DISTINCT m49code, regionName FROM raw
+WHERE regionName IS NOT NULL AND regionName != '';
+
+
+
+INSERT INTO lossWithoutRegion
+SELECT lossId , m49code, cpc, year, lossValue, activityName, foodSupplyStageName, lossCauseName FROM RAW
+WHERE RegionName = '';
+
+INSERT INTO lossWithRegion
+SELECT lossId, m49Code, cpc, year, lossValue, activityName, foodSupplyStageName, lossCauseName FROM RAW 
+WHERE RegionName IS NOT NULL And regionName !='';
+
+INSERT INTO foodType
+SELECT t1.cpc,t1.commodity FROM remainingrawcpc t1
+WHERE t1.cpc NOT IN (SELECT t2.cpc FROM foodType t2) AND t1.commodity NOT IN (SELECT t2.categoryName FROM foodType t2);
+
+
+
